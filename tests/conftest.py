@@ -1,8 +1,15 @@
 import asyncio
-from typing import AsyncGenerator
+import dataclasses
+import uuid
+from datetime import datetime
+from typing import AsyncGenerator, Any, Optional
 
 import pytest
+from fastapi.openapi.models import Response
 from fastapi.testclient import TestClient
+from fastapi_users import models
+from fastapi_users.authentication import CookieTransport, BearerTransport, Strategy
+from fastapi_users.openapi import OpenAPIResponseType
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,6 +19,7 @@ from api import app
 from db.database import get_async_session
 from db.modelsORM import metadata
 
+from src.db.modelsORM import User
 from tests.configs.config import TestSettings
 
 settings = TestSettings()
@@ -52,3 +60,18 @@ client = TestClient(app)
 async def ac() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
+
+
+class MockTransport(CookieTransport):
+    def __init__(self, cookie_max_age: int):
+        super().__init__(cookie_max_age=cookie_max_age)
+
+def generate_id() -> int:
+    return hash(uuid.uuid4())
+
+
+@dataclasses.dataclass
+class UserModel(models.UserProtocol[int]):
+    username: str
+    hashed_password: str
+    id: int = dataclasses.field(default_factory=generate_id)

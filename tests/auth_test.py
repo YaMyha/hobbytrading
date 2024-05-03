@@ -1,4 +1,40 @@
-from tests.configs.conftest import client
+from typing import Type, Callable, cast
+
+import pytest
+from fastapi_users.authentication import Transport, CookieTransport, AuthenticationBackend, Strategy
+from starlette.responses import Response
+
+from src.auth.auth import get_jwt_strategy
+from tests.conftest import client, MockTransport, UserModel
+
+
+@pytest.fixture(params=[MockTransport])
+def transport(request) -> Transport:
+    transport_class: Type[CookieTransport] = request.param
+    return transport_class(cookie_max_age=3600)
+
+
+@pytest.fixture
+def user() -> UserModel:
+    return UserModel(
+        username="string",
+        hashed_password="string",
+    )
+
+
+@pytest.fixture()
+def get_strategy() -> Callable[..., Strategy]:
+    strategy_class = get_jwt_strategy
+    return lambda: strategy_class()
+
+
+@pytest.fixture
+def backend(
+        transport: Transport, get_strategy: Callable[..., Strategy]
+) -> AuthenticationBackend:
+    return AuthenticationBackend(
+        name="mock", transport=transport, get_strategy=get_strategy
+    )
 
 
 class TestAuth:
@@ -14,16 +50,10 @@ class TestAuth:
 
         assert response.status_code == 201
 
-# IT DOESN'T WORK.
-    # def test_login(self):
-    #     assert "fastapiusersauth" not in client.cookies
-    #     response = client.post("/auth/jwt/login", json={
-    #         "username": "string",
-    #         "password": "string"
-    #     })
-    #     cookies = [header for header in response.raw_headers if header[0] == b"set-cookie"]
-    #     assert len(cookies) == 1
-    #
-    #     cookie = cookies[0][1].decode("latin-1")
-    #
-    #     assert "fastapiusersauth" in cookie
+# Check cookie header as well
+    @pytest.mark.authentication
+    async def test_login(self, backend: AuthenticationBackend, user: UserModel):
+        strategy = cast(Strategy, backend.get_strategy())
+        result = await backend.login(strategy, user)
+        assert isinstance(result, Response)
+
