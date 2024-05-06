@@ -2,16 +2,10 @@ from typing import Type, Callable, cast
 
 import pytest
 from fastapi_users.authentication import Transport, CookieTransport, AuthenticationBackend, Strategy
-from starlette.responses import Response
+from httpx import Response
 
-from src.auth.auth import get_jwt_strategy
+from src.auth.auth import get_jwt_strategy, auth_backend
 from tests.conftest import client, MockTransport, UserModel
-
-
-@pytest.fixture(params=[MockTransport])
-def transport(request) -> Transport:
-    transport_class: Type[CookieTransport] = request.param
-    return transport_class(cookie_max_age=3600)
 
 
 @pytest.fixture
@@ -28,15 +22,6 @@ def get_strategy() -> Callable[..., Strategy]:
     return lambda: strategy_class()
 
 
-@pytest.fixture
-def backend(
-        transport: Transport, get_strategy: Callable[..., Strategy]
-) -> AuthenticationBackend:
-    return AuthenticationBackend(
-        name="mock", transport=transport, get_strategy=get_strategy
-    )
-
-
 class TestAuth:
     def test_register(self):
         response = client.post("/auth/register", json={
@@ -50,10 +35,16 @@ class TestAuth:
 
         assert response.status_code == 201
 
-# Check cookie header as well
-    @pytest.mark.authentication
-    async def test_login(self, backend: AuthenticationBackend, user: UserModel):
-        strategy = cast(Strategy, backend.get_strategy())
-        result = await backend.login(strategy, user)
-        assert isinstance(result, Response)
+    def test_login(self):
+        user_data = {
+            "username": "string",
+            "password": "string"
+        }
+        response = client.post("/auth/jwt/login", data=user_data)
+
+        assert isinstance(response, Response)
+        assert response.status_code == 200 or 204, f"Ошибка авторизации: {response.text}"
+
+        cookie: str = response.headers["set-cookie"].split(";")[0]
+        assert "fastapiusersauth" in cookie
 
