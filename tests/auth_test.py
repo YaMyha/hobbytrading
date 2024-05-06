@@ -35,7 +35,7 @@ class TestAuth:
 
         assert response.status_code == 201
 
-    def test_login(self):
+    def test_log_in_out(self):
         user_data = {
             "username": "string",
             "password": "string"
@@ -43,8 +43,12 @@ class TestAuth:
         response = client.post("/auth/jwt/login", data=user_data)
 
         assert isinstance(response, Response)
-        assert response.status_code == 200 or 204, f"Ошибка авторизации: {response.text}"
+        assert response.status_code == 200 or 204, f"Authorization error: {response.text}"
 
         cookie: str = response.headers["set-cookie"].split(";")[0]
         assert "fastapiusersauth" in cookie
 
+        response = client.post("/auth/jwt/logout")
+
+        assert isinstance(response, Response)
+        assert response.status_code == 401, f"Logout error: {response.text}"
