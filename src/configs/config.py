@@ -4,6 +4,7 @@ import os
 
 DOTENV = os.path.join(os.path.dirname(__file__), ".env")
 
+
 class AppSettings(BaseSettings):
     DB_HOST: str
     DB_PORT: int

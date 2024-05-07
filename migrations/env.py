@@ -10,8 +10,8 @@ from alembic import context
 import os
 import sys
 
+from src.db.modelsORM import metadata
 from src.configs.config import settings
-from db.modelsORM import metadata
 
 sys.path.append(os.path.join(sys.path[0], 'src'))
 
@@ -21,7 +21,7 @@ sys.path.append(os.path.join(sys.path[0], 'src'))
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "DB_URL", settings.DATABASE_URL)
+config.set_section_option(section, "DB_URL", settings.DATABASE_URL_asyncpg)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
