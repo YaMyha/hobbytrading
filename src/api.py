@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from auth.UserManager import get_user_manager
 from auth.auth import auth_backend
 from auth.schemas import UserRead, UserCreate
+from configs.config import settings
 from db.modelsORM import User
 from routers.users_router import router as users_router
 from routers.posts_router import router as posts_router
@@ -14,7 +15,7 @@ from routers.posts_router import router as posts_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis = aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
     yield
 

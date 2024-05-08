@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: hobbytrading_db
+    command: -p 1221
+    expose:
+      - 1221
+    env_file:
+      - /src/configs/.env-prod
+
+  redis:
+    image: redis:7
+    container_name: hobbytrading_redis
+    command: [ "--port", "5370" ]
+    ports:
+      - "5370:5370"
+
+  app:
+    build:
+      context: .
+    env_file:
+      - /src/configs/.env-prod
+    container_name: hobbytrading_app
+    command: ["/fastapi_app/docker/app.sh"]
+    ports:
+      - 9999:8000
+    depends_on:
+      - db
+      - redis
+
+
