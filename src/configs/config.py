@@ -35,11 +35,6 @@ class AppSettings:
 
     @property
     def DATABASE_URL_asyncpg(self):
-        print(self.DB_HOST)
-        print(self.DB_PORT)
-        print(self.DB_NAME)
-        print(self.DB_USER)
-        print(self.DB_PASS)
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
