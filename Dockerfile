@@ -11,6 +11,9 @@ RUN pip install -r requirements.txt
 COPY . .
 
 RUN chmod a+x /fastapi_app/docker/*.sh
-#WORKDIR src
 
-#CMD gunicorn api:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+RUN alembic upgrade head
+
+WORKDIR src
+
+CMD gunicorn api:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000

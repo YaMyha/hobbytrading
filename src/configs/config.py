@@ -2,7 +2,7 @@ from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
-DOTENV = os.path.join(os.path.dirname(__file__), ".env-prod")
+DOTENV = os.path.join(os.path.dirname(__file__), ".env-render")
 
 
 class AppSettings(BaseSettings):
