@@ -12,8 +12,8 @@ COPY . .
 
 RUN chmod a+x /fastapi_app/docker/*.sh
 
-alembic upgrade head
+RUN alembic upgrade head
 
 WORKDIR src
 
-gunicorn api:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+CMD gunicorn api:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
